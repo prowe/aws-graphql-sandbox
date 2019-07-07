@@ -1,0 +1,29 @@
+
+type Query {
+    volume(id: ID!): Volume
+
+    search(q: String!): [Volume]
+}
+
+type Mutation {
+    addVolume(isbn: String!, shelf: String): Volume!
+
+    assignShelf(shelf: String!): Volume!
+
+    checkoutVolume(id: ID!): Volume!
+
+    returnVolume(id: ID!): Volume!
+}
+
+type Volume {
+    id: ID!
+    isbn: String!
+    title: String!
+    assignedShelf: String
+    checkedOutBy: LibraryPatron
+}
+
+type LibraryPatron {
+    name: String!
+    email: String!
+}

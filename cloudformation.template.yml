@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS Graphql Sandbox (Paul Rowe)
+Resources:
+  GraphQLApi:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: prowe-graphql
+      AuthenticationType: API_KEY
+  ApiKey:
+    Type: AWS::AppSync::ApiKey
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+  Schema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      DefinitionS3Location: schema.graphqls
+  NullDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: NullDataSource
+      Type: NONE
+  PageMutationResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: Mutation
+      FieldName: page
+      DataSourceName: !GetAtt NullDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "payload": {
+              "body": $utils.toJson(context.arguments.body),
+              "from": $utils.toJson(context.identity.username),
+              "to": $utils.toJson(context.arguments.to),
+              "sentAt": "$util.time.nowISO8601()"
+          }
+        }
+      ResponseMappingTemplate: "$util.toJson($context.result)"
+Outputs:
+  ApiKey:
+    Value: !GetAtt ApiKey.ApiKey
